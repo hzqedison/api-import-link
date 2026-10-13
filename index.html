@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>俊云AI · 一键导入</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "PingFang SC", "Microsoft YaHei", -apple-system, sans-serif;
+    background: linear-gradient(135deg, #1a1f36 0%, #2d1b4e 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+  }
+  .card {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 20px;
+    padding: 48px 40px;
+    max-width: 480px;
+    width: 90%;
+    text-align: center;
+    backdrop-filter: blur(12px);
+  }
+  .logo { font-size: 40px; margin-bottom: 12px; }
+  h1 { font-size: 22px; font-weight: 600; margin-bottom: 8px; }
+  .provider {
+    display: inline-block;
+    background: rgba(120, 180, 255, 0.15);
+    border: 1px solid rgba(120, 180, 255, 0.35);
+    color: #9ecbff;
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-size: 14px;
+    margin: 14px 0 6px;
+    word-break: break-all;
+  }
+  .status { font-size: 15px; color: rgba(255,255,255,0.75); margin: 18px 0 26px; line-height: 1.7; }
+  .btn {
+    display: inline-block;
+    background: linear-gradient(90deg, #4f8cff, #7b5cff);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 14px 36px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: transform .15s, box-shadow .15s;
+  }
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(90,120,255,.4); }
+  .tip {
+    margin-top: 28px;
+    font-size: 13px;
+    color: rgba(255,255,255,0.45);
+    line-height: 1.8;
+  }
+  .tip a { color: #7fb0ff; text-decoration: none; }
+  .spinner {
+    width: 22px; height: 22px;
+    border: 3px solid rgba(255,255,255,.2);
+    border-top-color: #7fb0ff;
+    border-radius: 50%;
+    margin: 0 auto 14px;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">⚡</div>
+  <h1>俊云AI · 一键导入</h1>
+  <div id="providerBox" class="provider hidden"></div>
+  <div id="loadingArea">
+    <div class="spinner"></div>
+    <div class="status">正在唤起暴喵AI管家，请在弹窗中确认导入…</div>
+  </div>
+  <a id="openBtn" class="btn" href="#">点击唤起 AI 管家</a>
+  <div class="tip">
+    点击后浏览器会询问「是否打开 ai-manager」，请选择允许。<br>
+    如果没有任何反应，说明还没安装暴喵AI管家，<br>
+    请先查看<a href="https://alidocs.dingtalk.com/i/nodes/dpYLaezmVNZxjm6lFKwAAjqYVrMqPxX6">公司内部API Key使用教程</a>完成安装。
+  </div>
+</div>
+<script>
+(function () {
+  var hash = location.hash.slice(1);
+  var btn = document.getElementById('openBtn');
+  var providerBox = document.getElementById('providerBox');
+  var loadingArea = document.getElementById('loadingArea');
+
+  if (!hash) {
+    loadingArea.innerHTML = '<div class="status">链接无效：缺少导入参数。<br>请联系管理员获取正确的一键导入链接。</div>';
+    btn.classList.add('hidden');
+    return;
+  }
+
+  var deeplink;
+  try {
+    deeplink = decodeURIComponent(hash);
+  } catch (e) {
+    deeplink = hash;
+  }
+
+  if (!/^aimanager:\/\/|^ccswitch:\/\//.test(deeplink)) {
+    loadingArea.innerHTML = '<div class="status">链接无效：不是合法的导入协议。<br>请联系管理员获取正确的一键导入链接。</div>';
+    btn.classList.add('hidden');
+    return;
+  }
+
+  // 从 deeplink 里解析供应商名字展示
+  try {
+    var m = /[?&]name=([^&]+)/.exec(deeplink);
+    if (m) {
+      providerBox.textContent = decodeURIComponent(m[1].replace(/\+/g, ' '));
+      providerBox.classList.remove('hidden');
+    }
+  } catch (e) {}
+
+  btn.href = deeplink;
+
+  // 自动唤起一次
+  setTimeout(function () {
+    window.location.href = deeplink;
+  }, 400);
+
+  // 6 秒后还在本页，提示可能未安装
+  setTimeout(function () {
+    loadingArea.innerHTML = '<div class="status">如果 AI 管家没有被唤起，<br>请点下方按钮重试，或确认已安装暴喵AI管家。</div>';
+  }, 6000);
+})();
+</script>
+</body>
+</html>
